@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monopoly Papua Online - Pro Strategy</title>
+    <title>Monopoly Papua - Immersive Center Edition</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -12,16 +12,92 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #09090b; color: white; margin: 0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        .board-grid { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); aspect-ratio: 1/1; width: 100%; max-width: 650px; margin: auto; background: #18181b; border: 4px solid #27272a; position: relative; }
-        .tile { border: 0.1px solid #3f3f46; position: relative; background: white; color: #18181b; display: flex; flex-direction: column; overflow: hidden; font-size: 0.5rem; font-weight: 800; text-align: center; cursor: pointer; }
-        .token { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 50; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
-        .house-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0c0c0e; 
+            color: white; 
+            margin: 0; 
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+        /* Full Board Responsive Container */
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 95vmin;
+            height: 95vmin;
+            position: relative;
+        }
+
+        .board-grid { 
+            display: grid; 
+            grid-template-columns: repeat(11, 1fr); 
+            grid-template-rows: repeat(11, 1fr); 
+            width: 100%; 
+            height: 100%; 
+            background: #1e1e22; 
+            border: 6px solid #27272a; 
+            position: relative;
+            box-shadow: 0 0 100px rgba(0,0,0,0.8);
+        }
+
+        .tile { 
+            border: 0.1px solid #3f3f46; 
+            position: relative; 
+            background: white; 
+            color: #18181b; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            font-size: 0.5rem; 
+            font-weight: 800; 
+            text-align: center;
+        }
+
+        /* Center Dynamic Dashboard */
+        .center-dash {
+            grid-column: 2 / 11;
+            grid-row: 2 / 11;
+            background: #111113;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: relative;
+            border: 2px solid #27272a;
+            overflow: hidden;
+        }
+
+        .token { 
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            z-index: 50; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            width: 5vmin;
+            height: 5vmin;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid white;
+            font-size: 2.5vmin;
+            position: absolute;
+        }
+
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(8deg); } 75% { transform: rotate(-8deg); } }
         .rolling { animation: shake 0.1s infinite; }
-        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
+
+        .custom-scroll::-webkit-scrollbar { width: 3px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
+        
+        .pulse-turn { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); } 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); } }
     </style>
 </head>
 <body>
@@ -46,34 +122,34 @@
     </script>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useMemo } = React;
 
         const TILES_DATA = [
             { name: "MULAI", type: "start", price: 0 },
-            { name: "Raja Ampat", type: "prop", color: "#78350f", price: 600000, rent: [40000, 200000, 600000, 1800000], build: 500000 },
-            { name: "Suara Rakyat", type: "community" },
-            { name: "Danau Sentani", type: "prop", color: "#78350f", price: 600000, rent: [40000, 200000, 600000, 1800000], build: 500000 },
+            { name: "Pantai Base G", type: "prop", color: "#78350f", price: 600000, rent: [40000, 200000, 600000, 1500000], build: 500000 },
+            { name: "Suara Rakyat", type: "event" },
+            { name: "Danau Sentani", type: "prop", color: "#78350f", price: 600000, rent: [40000, 200000, 600000, 1500000], build: 500000 },
             { name: "Pajak Masuk", type: "tax", price: 2000000 },
             { name: "Bandara Sentani", type: "airport", price: 2000000 },
-            { name: "Biak Kota", type: "prop", color: "#0ea5e9", price: 1000000, rent: [60000, 300000, 900000, 2700000], build: 500000 },
-            { name: "Peluang", type: "chance" },
-            { name: "Supiori", type: "prop", color: "#0ea5e9", price: 1000000, rent: [60000, 300000, 900000, 2700000], build: 500000 },
-            { name: "Yapen", type: "prop", color: "#0ea5e9", price: 1200000, rent: [80000, 400000, 1200000, 3000000], build: 500000 },
-            { name: "PENJARA", type: "jail" },
-            { name: "Wamena", type: "prop", color: "#d946ef", price: 1400000, rent: [100000, 500000, 1500000, 4500000], build: 1000000 },
+            { name: "Biak Kota", type: "prop", color: "#0ea5e9", price: 1000000, rent: [60000, 300000, 900000, 2500000], build: 500000 },
+            { name: "Peluang", type: "event" },
+            { name: "Supiori", type: "prop", color: "#0ea5e9", price: 1000000, rent: [60000, 300000, 900000, 2500000], build: 500000 },
+            { name: "Kep. Yapen", type: "prop", color: "#0ea5e9", price: 1200000, rent: [80000, 400000, 1000000, 3000000], build: 500000 },
+            { name: "PENJARA ADAT", type: "jail" },
+            { name: "Wamena", type: "prop", color: "#d946ef", price: 1400000, rent: [100000, 500000, 1500000, 4000000], build: 1000000 },
             { name: "PLN", type: "util", price: 1500000 },
-            { name: "Baliem", type: "prop", color: "#d946ef", price: 1400000, rent: [100000, 500000, 1500000, 4500000], build: 1000000 },
+            { name: "Lembah Baliem", type: "prop", color: "#d946ef", price: 1400000, rent: [100000, 500000, 1500000, 4000000], build: 1000000 },
             { name: "Puncak Jaya", type: "prop", color: "#d946ef", price: 1600000, rent: [120000, 600000, 1800000, 5000000], build: 1000000 },
             { name: "Pelabuhan Jayapura", type: "port", price: 2000000 },
             { name: "Timika", type: "prop", color: "#f97316", price: 1800000, rent: [140000, 700000, 2000000, 5500000], build: 1000000 },
-            { name: "Suara Rakyat", type: "community" },
+            { name: "Suara Rakyat", type: "event" },
             { name: "Tembagapura", type: "prop", color: "#f97316", price: 1800000, rent: [140000, 700000, 2000000, 5500000], build: 1000000 },
             { name: "Asmat", type: "prop", color: "#f97316", price: 2000000, rent: [160000, 800000, 2200000, 6000000], build: 1000000 },
             { name: "PARKIR BEBAS", type: "park" },
             { name: "Manokwari", type: "prop", color: "#ef4444", price: 2200000, rent: [180000, 900000, 2500000, 7000000], build: 1500000 },
-            { name: "Peluang", type: "chance" },
-            { name: "Wondama", type: "prop", color: "#ef4444", price: 2200000, rent: [180000, 900000, 2500000, 7000000], build: 1500000 },
-            { name: "Fakfak", type: "prop", color: "#ef4444", price: 2400000, rent: [200000, 1000000, 3000000, 7500000], build: 1500000 },
+            { name: "Peluang", type: "event" },
+            { name: "Teluk Wondama", type: "prop", color: "#ef4444", price: 2200000, rent: [180000, 900000, 2500000, 7000000], build: 1500000 },
+            { name: "Kab. Fakfak", type: "prop", color: "#ef4444", price: 2400000, rent: [200000, 1000000, 3000000, 7500000], build: 1500000 },
             { name: "Bandara Mopah", type: "airport", price: 2000000 },
             { name: "Merauke", type: "prop", color: "#eab308", price: 2600000, rent: [220000, 1100000, 3300000, 8000000], build: 1500000 },
             { name: "Boven Digoel", type: "prop", color: "#eab308", price: 2600000, rent: [220000, 1100000, 3300000, 8000000], build: 1500000 },
@@ -82,21 +158,22 @@
             { name: "MASUK PENJARA", type: "gotojail" },
             { name: "Sorong Kota", type: "prop", color: "#16a34a", price: 3000000, rent: [260000, 1300000, 3900000, 9000000], build: 2000000 },
             { name: "Raja Ampat 2", type: "prop", color: "#16a34a", price: 3000000, rent: [260000, 1300000, 3900000, 9000000], build: 2000000 },
-            { name: "Suara Rakyat", type: "community" },
+            { name: "Suara Rakyat", type: "event" },
             { name: "Piaynemo", type: "prop", color: "#16a34a", price: 3200000, rent: [280000, 1500000, 4500000, 10000000], build: 2000000 },
             { name: "Pelabuhan Sorong", type: "port", price: 2000000 },
-            { name: "Peluang", type: "chance" },
+            { name: "Peluang", type: "event" },
             { name: "Jayapura", type: "prop", color: "#2563eb", price: 3500000, rent: [350000, 1750000, 5000000, 11000000], build: 2000000 },
             { name: "Denda Adat", type: "tax", price: 3000000 },
             { name: "Puncak Jayapura", type: "prop", color: "#2563eb", price: 4000000, rent: [500000, 2000000, 6000000, 13000000], build: 2000000 }
         ];
 
         const CHANCE_CARDS = [
-            { text: "Denda Tabrak Babi! Bayar Rp1.500.000", money: -1500000 },
-            { text: "Hasil Mas Kawin Keluarga! Dapat Rp1.000.000", money: 1000000 },
-            { text: "Menang Lomba Molo Danau Sentani! Dapat Rp500.000", money: 500000 },
-            { text: "Langgar Aturan Adat! Pergi ke Penjara", goto: 10, jail: 3 },
-            { name: "Jalan-jalan ke Jayapura", goto: 39 }
+            { text: "Bagi hasil mas kawin keluarga! Dapat Rp1.000.000", pay: 1000000 },
+            { text: "Denda tabrak babi di jalan! Bayar Rp1.500.000", pay: -1500000 },
+            { text: "Menang lomba Molo Danau Sentani! Dapat Rp500.000", pay: 500000 },
+            { text: "Denda Adat: Melanggar batas wilayah! Bayar Rp500.000", pay: -500000 },
+            { text: "Kunjungan kerja ke Jayapura!", goto: 39 },
+            { text: "Tertangkap berburu tanpa izin! Masuk Penjara Adat", goto: 10, jail: 3 }
         ];
 
         const TOKENS = ["🦜", "🐊", "🛶", "🐍", "🦘"];
@@ -105,12 +182,17 @@
             const [user, setUser] = useState(null);
             const [roomID, setRoomID] = useState("");
             const [playerName, setPlayerName] = useState("");
-            const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
             const [gameState, setGameState] = useState(null);
             const [screen, setScreen] = useState('landing');
             const [isRolling, setIsRolling] = useState(false);
+            const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
             const [localPos, setLocalPos] = useState({});
-            const [utilityPrice, setUtilityPrice] = useState(100000); // Default service fee
+
+            // Coordinates calculation for 11x11 grid perimeter
+            const getTileStyle = (i) => {
+                const c = [[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[11,4],[11,3],[11,2],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[2,11],[3,11],[4,11],[5,11],[6,11],[7,11],[8,11],[9,11],[10,11]];
+                return { gridRow: c[i][0], gridColumn: c[i][1] };
+            };
 
             useEffect(() => {
                 if (!window.FB) return;
@@ -122,36 +204,37 @@
 
             useEffect(() => {
                 if (!roomID || !user || !window.FB) return;
-                const { db, doc, onSnapshot } = window.FB;
-                return onSnapshot(doc(db, "rooms", roomID), snap => {
+                return window.FB.onSnapshot(window.FB.doc(window.FB.db, "rooms", roomID), snap => {
                     if (snap.exists()) {
                         const data = snap.data();
                         setGameState(data);
                         if (data.status === 'playing') setScreen('game');
                         
-                        const newPos = {};
-                        data.players.forEach(p => newPos[p.uid] = p.pos);
-                        setLocalPos(newPos);
+                        // Sync visual tokens
+                        const posMap = {};
+                        data.players.forEach(p => posMap[p.uid] = p.pos);
+                        setLocalPos(posMap);
                     }
                 });
             }, [roomID, user]);
 
             const joinRoom = async (role) => {
-                if (!playerName) return alert("Nama tidak boleh kosong!");
-                const id = role === 'host' ? "PAPUA-" + Math.floor(1000 + Math.random() * 9000) : roomID;
-                if (!id) return alert("Kode Room tidak valid!");
+                if (!playerName) return alert("Masukkan Nama!");
+                const id = role === 'host' ? "P-" + Math.floor(1000 + Math.random() * 9000) : roomID;
+                if (!id) return alert("Masukkan Kode Room!");
 
                 const { db, doc, getDoc, setDoc } = window.FB;
                 const docRef = doc(db, "rooms", id);
                 const snap = await getDoc(docRef);
                 
                 let data = snap.exists() ? snap.data() : { 
-                    players: [], status: 'waiting', turn: 0, dice: [1, 1], logs: ["Selamat datang!"], props: {}, utilRates: { pln: 0, pam: 0 } 
+                    players: [], status: 'waiting', turn: 0, dice: [1,1], logs: ["Mulai petualangan!"], props: {}, utilRates: { pln: 0, pam: 0 } 
                 };
 
                 if (data.players.length >= 4) return alert("Penuh!");
                 if (!data.players.find(p => p.uid === user.uid)) {
                     data.players.push({ uid: user.uid, name: playerName, token: selectedToken, money: 15000000, pos: 0, color: `hsl(${Math.random()*360}, 70%, 50%)`, isHost: role === 'host', inJail: 0 });
+                    data.logs.push(`${playerName} bergabung.`);
                 }
                 setRoomID(id);
                 await setDoc(docRef, data);
@@ -168,80 +251,75 @@
                 const d2 = Math.floor(Math.random()*6)+1;
                 const total = d1 + d2;
 
-                let currentStep = 0;
-                const interval = setInterval(() => {
+                // Simple stepping animation
+                let steps = 0;
+                const anim = setInterval(() => {
                     setLocalPos(prev => ({ ...prev, [user.uid]: (prev[user.uid] + 1) % 40 }));
-                    currentStep++;
-                    if (currentStep >= total) {
-                        clearInterval(interval);
-                        processTurn(d1, d2, total);
+                    steps++;
+                    if (steps >= total) {
+                        clearInterval(anim);
+                        executeTurn(d1, d2, total);
                     }
-                }, 200);
+                }, 150);
             };
 
-            const processTurn = async (d1, d2, total) => {
+            const executeTurn = async (d1, d2, total) => {
                 const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
                 let players = [...gameState.players];
                 let props = { ...gameState.props };
                 let logs = [...gameState.logs].slice(-15);
+                let rates = { ...gameState.utilRates };
                 let cur = players[myIdx];
-                let utilRates = { ...gameState.utilRates };
 
                 if (cur.inJail > 0) {
-                    if (d1 === d2) { cur.inJail = 0; logs.push(`${cur.name} bebas!`); }
-                    else { cur.inJail--; logs.push(`${cur.name} skip giliran.`); }
+                    if (d1 === d2) { cur.inJail = 0; logs.push(`${cur.name} bebas dari penjara!`); }
+                    else { cur.inJail--; logs.push(`${cur.name} tertahan di penjara.`); }
                 } else {
                     const oldPos = cur.pos;
                     cur.pos = (cur.pos + total) % 40;
                     if (cur.pos < oldPos) { cur.money += 2000000; logs.push(`${cur.name} lewat MULAI: +Rp2jt`); }
-                    
-                    const tile = TILES_DATA[cur.pos];
-                    logs.push(`${cur.name} di ${tile.name}`);
 
-                    // 1. Check Events (Chance/Community)
-                    if (tile.type === 'chance' || tile.type === 'community') {
+                    const tile = TILES_DATA[cur.pos];
+                    logs.push(`${cur.name} tiba di ${tile.name}`);
+
+                    // Logic: Events
+                    if (tile.type === 'event' || tile.type === 'chance' || tile.name.includes("Peluang") || tile.name.includes("Suara Rakyat")) {
                         const card = CHANCE_CARDS[Math.floor(Math.random()*CHANCE_CARDS.length)];
                         logs.push(`Kartu: ${card.text}`);
-                        if (card.money) cur.money += card.money;
+                        if (card.pay) cur.money += card.pay;
                         if (card.goto !== undefined) cur.pos = card.goto;
                         if (card.jail) cur.inJail = card.jail;
                     }
 
-                    // 2. Check Tax/Jail
+                    // Logic: Tax/Jail
                     if (tile.type === 'tax') { cur.money -= tile.price; logs.push(`Bayar ${tile.name} Rp${tile.price/1000}k`); }
                     if (tile.type === 'gotojail') { cur.pos = 10; cur.inJail = 3; logs.push(`${cur.name} ditangkap!`); }
 
-                    // 3. Rent Logic
-                    const propData = props[cur.pos];
-                    if (propData && propData.owner !== user.uid) {
-                        const ownerIdx = players.findIndex(p => p.uid === propData.owner);
-                        const rent = tile.type === 'prop' ? tile.rent[propData.houses] : 500000;
-                        cur.money -= rent;
-                        players[ownerIdx].money += rent;
-                        logs.push(`Bayar sewa Rp${rent/1000}k ke ${players[ownerIdx].name}`);
+                    // Logic: Rent & Utility Tax
+                    const prop = props[cur.pos];
+                    if (prop && prop.owner !== user.uid) {
+                        const ownerIdx = players.findIndex(p => p.uid === prop.owner);
+                        const rentBase = tile.type === 'prop' ? tile.rent[prop.houses] : 500000;
+                        cur.money -= rentBase;
+                        players[ownerIdx].money += rentBase;
+                        logs.push(`Bayar sewa Rp${rentBase/1000}k ke ${players[ownerIdx].name}`);
                     }
 
-                    // 4. SPECIAL RULE: Utility Tax in Cities
+                    // CUSTOM RULE: PLN/PAM Service Fee
                     if (tile.type === 'prop') {
-                        // Check PLN
-                        const plnTileIdx = 12; // PLN
-                        const plnProp = props[plnTileIdx];
-                        if (plnProp && plnProp.owner !== user.uid && utilRates.pln > 0) {
-                            const fee = Math.min(utilRates.pln, tile.price);
+                        const pln = props[12];
+                        if (pln && pln.owner !== user.uid && rates.pln > 0) {
+                            const fee = Math.min(rates.pln, tile.price);
                             cur.money -= fee;
-                            const plnOwnerIdx = players.findIndex(p => p.uid === plnProp.owner);
-                            players[plnOwnerIdx].money += fee;
-                            logs.push(`Bayar Listrik Rp${fee/1000}k ke ${players[plnOwnerIdx].name}`);
+                            players[players.findIndex(p=>p.uid===pln.owner)].money += fee;
+                            logs.push(`Bayar Listrik Rp${fee/1000}k`);
                         }
-                        // Check PAM
-                        const pamTileIdx = 28; // PAM
-                        const pamProp = props[pamTileIdx];
-                        if (pamProp && pamProp.owner !== user.uid && utilRates.pam > 0) {
-                            const fee = Math.min(utilRates.pam, tile.price);
+                        const pam = props[28];
+                        if (pam && pam.owner !== user.uid && rates.pam > 0) {
+                            const fee = Math.min(rates.pam, tile.price);
                             cur.money -= fee;
-                            const pamOwnerIdx = players.findIndex(p => p.uid === pamProp.owner);
-                            players[pamOwnerIdx].money += fee;
-                            logs.push(`Bayar Air Rp${fee/1000}k ke ${players[pamOwnerIdx].name}`);
+                            players[players.findIndex(p=>p.uid===pam.owner)].money += fee;
+                            logs.push(`Bayar Air Rp${fee/1000}k`);
                         }
                     }
                 }
@@ -252,7 +330,7 @@
                 setIsRolling(false);
             };
 
-            const manageProp = async (type) => {
+            const manageAsset = async (type) => {
                 const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
                 let players = [...gameState.players];
                 let props = { ...gameState.props };
@@ -262,44 +340,36 @@
                 if (type === 'buy' && players[myIdx].money >= tile.price) {
                     players[myIdx].money -= tile.price;
                     props[pos] = { owner: user.uid, houses: 0 };
-                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${players[myIdx].name} beli ${tile.name}`] });
+                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${playerName} beli ${tile.name}`] });
                 } else if (type === 'build' && props[pos]?.owner === user.uid && players[myIdx].money >= tile.build && props[pos].houses < 3) {
                     players[myIdx].money -= tile.build;
                     props[pos].houses += 1;
-                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${players[myIdx].name} bangun Honai di ${tile.name}`] });
+                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${playerName} bangun Honai di ${tile.name}`] });
                 }
             };
 
-            const setServiceRate = async (type) => {
-                const amount = parseInt(prompt(`Masukkan tarif layanan ${type.toUpperCase()} (Batas: Harga beli kota):`, utilityPrice));
-                if (isNaN(amount) || amount < 0) return;
-                
-                let utilRates = { ...gameState.utilRates };
-                utilRates[type] = amount;
-                await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { 
-                    utilRates, 
-                    logs: [...gameState.logs, `${playerName} mengatur tarif ${type.toUpperCase()} ke Rp${amount.toLocaleString()}`] 
-                });
+            const setRate = async (util) => {
+                const val = prompt(`Set tarif ${util.toUpperCase()} (Batas: Harga beli Kota):`, 100000);
+                if (isNaN(val) || val === null) return;
+                let rates = { ...gameState.utilRates };
+                rates[util] = parseInt(val);
+                await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { utilRates: rates, logs: [...gameState.logs, `${playerName} set tarif ${util} ke Rp${rates[util].toLocaleString()}`] });
             };
 
-            const getPos = (i) => {
-                const c = [[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[11,4],[11,3],[11,2],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[2,11],[3,11],[4,11],[5,11],[6,11],[7,11],[8,11],[9,11],[10,11]];
-                return { r: c[i][0], c: c[i][1] };
-            };
-
+            // --- Views ---
             if (screen === 'landing') return (
-                <div className="h-screen flex flex-col items-center justify-center p-6 space-y-12">
-                    <div className="text-center space-y-2">
-                        <h1 className="text-8xl font-black text-orange-500 italic drop-shadow-2xl">PAPUA</h1>
-                        <p className="text-[10px] tracking-[0.5em] text-zinc-500 font-bold uppercase">Online Pro Edition</p>
+                <div className="flex flex-col items-center justify-center space-y-12 animate-in fade-in zoom-in duration-500">
+                    <div className="text-center">
+                        <h1 className="text-8xl font-black text-orange-500 italic drop-shadow-2xl tracking-tighter">PAPUA</h1>
+                        <p className="text-[10px] tracking-[0.6em] text-zinc-500 font-bold uppercase mt-2">Monopoly Online Pro</p>
                     </div>
-                    <div className="w-full max-w-sm space-y-4">
-                        <input className="w-full bg-zinc-900 border border-zinc-800 p-5 rounded-3xl text-white outline-none focus:ring-2 ring-orange-500" placeholder="Siapa nama ko?" value={playerName} onChange={e=>setPlayerName(e.target.value)} />
-                        <div className="flex justify-between bg-zinc-900 p-3 rounded-3xl border border-zinc-800">
-                            {TOKENS.map(t => <button key={t} onClick={()=>setSelectedToken(t)} className={`text-3xl p-3 rounded-2xl transition-all ${selectedToken===t?'bg-orange-600 shadow-xl scale-110':'opacity-30'}`}>{t}</button>)}
+                    <div className="w-80 space-y-4">
+                        <input className="w-full bg-zinc-900 border border-zinc-800 p-5 rounded-3xl text-white outline-none focus:ring-2 ring-orange-500 transition-all" placeholder="Siapa namamu Pace?" value={playerName} onChange={e=>setPlayerName(e.target.value)} />
+                        <div className="flex justify-around bg-zinc-900 p-3 rounded-3xl border border-zinc-800">
+                            {TOKENS.map(t => <button key={t} onClick={()=>setSelectedToken(t)} className={`text-3xl p-2 rounded-2xl transition-all ${selectedToken===t?'bg-orange-600 shadow-lg scale-110':'opacity-20'}`}>{t}</button>)}
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={()=>joinRoom('host')} className="flex-1 bg-orange-600 py-5 rounded-3xl font-black text-xl shadow-lg">HOST</button>
+                            <button onClick={()=>joinRoom('host')} className="flex-1 bg-orange-600 py-5 rounded-3xl font-black text-xl shadow-xl active:scale-95 transition-all">HOST</button>
                             <button onClick={()=>setScreen('join')} className="flex-1 bg-zinc-800 py-5 rounded-3xl font-black text-xl">GABUNG</button>
                         </div>
                     </div>
@@ -307,34 +377,31 @@
             );
 
             if (screen === 'join') return (
-                <div className="h-screen flex items-center justify-center p-6">
-                    <div className="bg-zinc-900 p-10 rounded-[3rem] w-full max-w-sm space-y-8 text-center border border-zinc-800 shadow-2xl">
-                        <h2 className="font-bold text-zinc-500 tracking-widest uppercase text-xs">MASUKKAN KODE</h2>
-                        <input className="w-full bg-zinc-800 p-5 rounded-2xl text-4xl font-black text-center tracking-widest border border-zinc-700 outline-none" placeholder="P-XXXX" value={roomID} onChange={e=>setRoomID(e.target.value.toUpperCase())} />
-                        <button onClick={()=>joinRoom('client')} className="w-full bg-orange-600 py-5 rounded-2xl font-black text-xl shadow-xl">GABUNG</button>
-                    </div>
+                <div className="bg-zinc-900 p-12 rounded-[3rem] w-80 text-center space-y-8 border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h2 className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest">KODE ROOM</h2>
+                    <input className="w-full bg-zinc-800 p-6 rounded-2xl text-4xl font-black text-center tracking-widest border border-zinc-700" placeholder="P-XXXX" value={roomID} onChange={e=>setRoomID(e.target.value.toUpperCase())} />
+                    <button onClick={()=>joinRoom('client')} className="w-full bg-orange-600 py-5 rounded-2xl font-black text-xl">MASUK</button>
+                    <button onClick={()=>setScreen('landing')} className="text-zinc-600 text-sm block mx-auto">Batal</button>
                 </div>
             );
 
             if (screen === 'lobby') return (
-                <div className="h-screen flex items-center justify-center p-6">
-                    <div className="bg-zinc-900 p-10 rounded-[3rem] w-full max-w-md space-y-10 border border-zinc-800 shadow-2xl">
-                        <div className="text-center space-y-2">
-                            <p className="text-[10px] text-zinc-500 font-bold">KODE ROOM ANDA</p>
-                            <p className="text-5xl font-black text-orange-500 tracking-tighter">{roomID}</p>
-                        </div>
-                        <div className="space-y-3">
-                            {gameState?.players.map(p => (
-                                <div key={p.uid} className="bg-zinc-800 p-4 rounded-3xl border border-zinc-800 flex justify-between items-center">
-                                    <span className="font-bold text-xl">{p.token} {p.name}</span>
-                                    {p.isHost && <span className="text-[10px] bg-orange-500 px-3 py-1 rounded-full font-black uppercase">Host</span>}
-                                </div>
-                            ))}
-                        </div>
-                        {gameState?.players.find(p=>p.uid===user.uid)?.isHost && (
-                            <button onClick={()=>window.FB.updateDoc(window.FB.doc(window.FB.db,"rooms",roomID),{status:'playing'})} className="w-full bg-white text-black py-5 rounded-3xl font-black text-xl">START GAME</button>
-                        )}
+                <div className="bg-zinc-900 p-12 rounded-[4rem] w-96 space-y-10 border border-zinc-800 shadow-2xl animate-in zoom-in duration-300">
+                    <div className="text-center space-y-2">
+                        <p className="text-[10px] text-zinc-500 font-black uppercase">Kode Ekspedisi</p>
+                        <p className="text-6xl font-black text-orange-500 tracking-widest">{roomID}</p>
                     </div>
+                    <div className="space-y-3">
+                        {gameState?.players.map(p => (
+                            <div key={p.uid} className="bg-zinc-800 p-5 rounded-3xl border border-zinc-800 flex justify-between items-center">
+                                <span className="font-bold text-xl">{p.token} {p.name}</span>
+                                {p.isHost && <span className="text-[8px] bg-orange-500 px-3 py-1 rounded-full font-black uppercase">Host</span>}
+                            </div>
+                        ))}
+                    </div>
+                    {gameState?.players.find(p=>p.uid===user.uid)?.isHost && (
+                        <button onClick={()=>window.FB.updateDoc(window.FB.doc(window.FB.db,"rooms",roomID),{status:'playing'})} className="w-full bg-white text-black py-6 rounded-[2.5rem] font-black text-2xl shadow-xl">MULAI PETUALANGAN</button>
+                    )}
                 </div>
             );
 
@@ -343,94 +410,102 @@
                 const isMyTurn = gameState.turn === myIdx;
                 const vPos = localPos[user.uid] || 0;
                 const tile = TILES_DATA[vPos];
-                const properties = gameState.props || {};
-                const ownerUid = properties[vPos]?.owner;
-                
-                const hasPLN = properties[12]?.owner === user.uid;
-                const hasPAM = properties[28]?.owner === user.uid;
+                const props = gameState.props || {};
+                const owner = props[vPos]?.owner;
 
                 return (
-                    <div className="min-h-screen flex flex-col xl:flex-row p-4 gap-6">
-                        <div className="flex-1 board-grid shadow-2xl rounded-2xl">
-                            {TILES_DATA.map((t, i) => {
-                                const coord = getPos(i);
-                                const prop = properties[i];
-                                return (
-                                    <div key={i} className="tile" style={{ gridRow: coord.r, gridColumn: coord.c }}>
-                                        {t.color && <div className="h-[20%] w-full" style={{ background: t.color }} />}
-                                        <div className="flex-1 flex items-center justify-center p-1"><span className="leading-none text-zinc-900 uppercase font-black">{t.name}</span></div>
-                                        {prop && <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border border-black/10" style={{ background: gameState.players.find(p=>p.uid===prop.owner)?.color }}></div>}
-                                        {prop?.houses > 0 && <div className="house-indicator">{[...Array(prop.houses)].map((_,idx)=><div key={idx} className="house-dot"></div>)}</div>}
-                                        <div className="absolute inset-0 flex items-center justify-center gap-0.5 pointer-events-none">
-                                            {gameState.players.map(p => localPos[p.uid] === i && <div key={p.uid} className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-lg text-[10px] token" style={{ background: p.color }}>{p.token}</div>)}
+                    <div className="game-wrapper animate-in fade-in duration-700">
+                        <div className="board-grid">
+                            {/* Tiles Rendering */}
+                            {TILES_DATA.map((t, i) => (
+                                <div key={i} className="tile" style={getTileStyle(i)}>
+                                    {t.color && <div className="h-[25%] w-full" style={{ background: t.color }} />}
+                                    <div className="flex-1 flex items-center justify-center p-1 font-black uppercase leading-[1.1]">{t.name}</div>
+                                    {props[i] && <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ background: gameState.players.find(p=>p.uid===props[i].owner)?.color }}></div>}
+                                    {props[i]?.houses > 0 && <div className="absolute top-[22%] w-full flex justify-center gap-0.5">{[...Array(props[i].houses)].map((_,idx)=><div key={idx} className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>)}</div>}
+                                </div>
+                            ))}
+
+                            {/* CENTER DASHBOARD - ACTION CENTER */}
+                            <div className="center-dash">
+                                <div className="flex-1 flex flex-col items-center justify-center space-y-6">
+                                    {/* Player Stats Bar */}
+                                    <div className="flex gap-2 w-full justify-center">
+                                        {gameState.players.map((p, idx) => (
+                                            <div key={p.uid} className={`px-4 py-3 rounded-2xl border transition-all ${gameState.turn===idx?'bg-zinc-800 border-orange-500 ring-4 ring-orange-500/20':'bg-zinc-950 border-zinc-800 opacity-30'} flex flex-col items-center min-w-[100px]`}>
+                                                <span className="text-xl">{p.token}</span>
+                                                <span className="text-[10px] font-black text-white/50">{p.name}</span>
+                                                <span className="text-xs font-black text-green-500">Rp{p.money/1000}k</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Dynamic Action Area */}
+                                    <div className="w-full bg-zinc-950/50 rounded-3xl p-6 border border-zinc-800/50 flex flex-col items-center space-y-6">
+                                        <div className="flex gap-4">
+                                            <div className={`w-16 h-16 bg-white rounded-2xl text-black flex items-center justify-center text-4xl font-black shadow-inner ${isRolling?'rolling':''}`}>{gameState.dice[0]}</div>
+                                            <div className={`w-16 h-16 bg-white rounded-2xl text-black flex items-center justify-center text-4xl font-black shadow-inner ${isRolling?'rolling':''}`}>{gameState.dice[1]}</div>
                                         </div>
+                                        
+                                        {isMyTurn && !isRolling ? (
+                                            <div className="w-full flex flex-col gap-3">
+                                                <button onClick={rollDice} className="w-full bg-orange-600 py-6 rounded-[2rem] font-black text-2xl shadow-xl pulse-turn active:scale-95 transition-all">KOCOK DADU</button>
+                                                
+                                                <div className="flex gap-2">
+                                                    {!owner && ['prop','airport','port','util'].includes(tile.type) && (
+                                                        <button onClick={()=>manageAsset('buy')} className="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">BELI {tile.name}</button>
+                                                    )}
+                                                    {owner===user.uid && tile.type==='prop' && props[vPos].houses < 3 && (
+                                                        <button onClick={()=>manageAsset('build')} className="flex-1 bg-green-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">BANGUN HONAI</button>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    {props[12]?.owner === user.uid && <button onClick={()=>setRate('pln')} className="flex-1 bg-yellow-600/20 text-yellow-500 py-3 rounded-xl text-[8px] font-black border border-yellow-500/20">SET TARIF PLN</button>}
+                                                    {props[28]?.owner === user.uid && <button onClick={()=>setRate('pam')} className="flex-1 bg-blue-600/20 text-blue-500 py-3 rounded-xl text-[8px] font-black border border-blue-500/20">SET TARIF PAM</button>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-4">
+                                                <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[10px]">Menunggu</p>
+                                                <p className="text-xl font-black text-white italic">{gameState.players[gameState.turn].name.toUpperCase()}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Mini Logs */}
+                                    <div className="w-full h-32 bg-zinc-950 p-4 rounded-2xl border border-zinc-800 overflow-hidden flex flex-col">
+                                        <div className="flex-1 overflow-y-auto space-y-1 custom-scroll">
+                                            {gameState.logs.slice().reverse().map((log, i) => <div key={i} className="text-[10px] text-zinc-500 border-l-2 border-zinc-800 pl-3 leading-tight">{log}</div>)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Visual Tokens Layer */}
+                            {gameState.players.map(p => {
+                                const coord = getTileStyle(localPos[p.uid] || 0);
+                                return (
+                                    <div 
+                                        key={p.uid} 
+                                        className="token" 
+                                        style={{ 
+                                            background: p.color, 
+                                            gridRow: coord.gridRow, 
+                                            gridColumn: coord.gridColumn,
+                                            transform: `translate(${(gameState.players.findIndex(pl=>pl.uid===p.uid)*10)-15}%, ${(gameState.players.findIndex(pl=>pl.uid===p.uid)*10)-15}%)` 
+                                        }}
+                                    >
+                                        {p.token}
                                     </div>
                                 );
                             })}
-                            <div className="col-start-2 col-end-11 row-start-2 row-end-11 flex items-center justify-center font-black text-9xl text-white/5 pointer-events-none">PAPUA</div>
-                        </div>
-
-                        <div className="w-full xl:w-96 space-y-4">
-                            <div className="bg-zinc-900 p-8 rounded-[3rem] border border-zinc-800 space-y-6 shadow-xl">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-orange-500 font-black uppercase tracking-widest text-xs">DASHBOARD</h3>
-                                    <div className={`px-4 py-1 rounded-full text-[10px] font-black tracking-widest ${isMyTurn?'bg-green-500 text-white animate-pulse':'bg-zinc-800 text-zinc-500'}`}>
-                                        {isMyTurn ? 'GILIRAN ANDA' : 'MENUNGGU '+gameState.players[gameState.turn].name.toUpperCase()}
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    {gameState.players.map((p, idx) => (
-                                        <div key={p.uid} className={`p-4 rounded-[1.5rem] flex justify-between items-center border transition-all ${gameState.turn===idx?'bg-zinc-800 border-orange-500':'bg-zinc-950 border-zinc-800 opacity-40'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-inner" style={{ background: p.color }}>{p.token}</div>
-                                                <span className="font-bold text-sm">{p.name}</span>
-                                            </div>
-                                            <span className="font-black text-green-500">Rp{p.money.toLocaleString()}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                <div className="flex gap-4">
-                                    <div className="flex gap-2 bg-black p-4 rounded-3xl border border-zinc-800 font-black text-3xl">
-                                        <div className={isRolling?'rolling':''}>{gameState.dice[0]}</div>
-                                        <div className={isRolling?'rolling':''}>{gameState.dice[1]}</div>
-                                    </div>
-                                    <button disabled={!isMyTurn || isRolling} onClick={rollDice} className="flex-1 bg-orange-600 rounded-3xl font-black text-xl shadow-xl transform active:scale-95 disabled:opacity-20 transition-all">KOCOK</button>
-                                </div>
-
-                                {/* Utility Controller - CUSTOM RULE */}
-                                {(hasPLN || hasPAM) && (
-                                    <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 space-y-3">
-                                        <p className="text-[10px] font-black text-zinc-600 uppercase">Kontrol Layanan Publik</p>
-                                        <div className="flex gap-2">
-                                            {hasPLN && <button onClick={()=>setServiceRate('pln')} className="flex-1 bg-yellow-600/20 text-yellow-500 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20">SET TARIF PLN</button>}
-                                            {hasPAM && <button onClick={()=>setServiceRate('pam')} className="flex-1 bg-blue-600/20 text-blue-500 py-2 rounded-xl text-[10px] font-black border border-blue-500/20">SET TARIF PAM</button>}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {isMyTurn && !isRolling && (
-                                    <div className="space-y-3">
-                                        {!ownerUid && ['prop','airport','port','util'].includes(tile.type) && (
-                                            <button onClick={()=>manageProp('buy')} className="w-full bg-blue-600 py-4 rounded-3xl font-black text-sm uppercase tracking-widest shadow-lg">BELI {tile.name} (Rp{tile.price/1000}k)</button>
-                                        )}
-                                        {ownerUid===user.uid && tile.type==='prop' && properties[vPos].houses < 3 && (
-                                            <button onClick={()=>manageProp('build')} className="w-full bg-green-600 py-4 rounded-3xl font-black text-sm uppercase tracking-widest shadow-lg">BANGUN HONAI (Rp{tile.build/1000}k)</button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-zinc-900 p-6 rounded-[2.5rem] h-48 border border-zinc-800 overflow-hidden flex flex-col shadow-inner">
-                                <span className="text-[10px] text-zinc-600 font-black uppercase mb-3 flex items-center gap-2">Log Aktivitas</span>
-                                <div className="flex-1 overflow-y-auto space-y-1 custom-scroll text-[11px] text-zinc-400">
-                                    {gameState.logs.slice().reverse().map((log, i) => <div key={i} className="border-l-4 border-zinc-800 pl-4 py-1 leading-relaxed">{log}</div>)}
-                                </div>
-                            </div>
                         </div>
                     </div>
                 );
             }
-            return <div className="h-screen flex items-center justify-center font-black text-orange-500 animate-pulse">MEMUAT EKSPEDISI PAPUA...</div>;
+
+            return <div className="h-screen flex items-center justify-center font-black text-orange-500 text-3xl animate-pulse italic">PAPUA LOADING...</div>;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
