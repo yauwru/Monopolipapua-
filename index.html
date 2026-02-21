@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monopoly Papua - Premium Immersive Edition</title>
+    <title>Monopoly Papua - Mobile Optimized</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -24,6 +24,7 @@
             justify-content: center;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         #root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
@@ -31,8 +32,9 @@
         .game-wrapper {
             display: flex;
             flex-direction: column;
-            width: 98vmin;
-            height: 98vmin;
+            /* Optimasi ukuran agar muat di layar HP tanpa terpotong bar browser */
+            width: min(95vw, 90vh);
+            height: min(95vw, 90vh);
             position: relative;
         }
 
@@ -43,9 +45,9 @@
             width: 100%; 
             height: 100%; 
             background: #18181b; 
-            border: 8px solid #27272a; 
+            border: 4px solid #27272a; 
             position: relative;
-            box-shadow: 0 0 60px rgba(0,0,0,0.7);
+            box-shadow: 0 0 40px rgba(0,0,0,0.7);
         }
 
         .tile { 
@@ -56,10 +58,10 @@
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
-            font-size: 0.52rem; 
+            /* Font responsif berdasarkan ukuran board */
+            font-size: 1.2vmin; 
             font-weight: 800; 
             text-align: center;
-            transition: all 0.2s;
         }
 
         .center-dash {
@@ -68,61 +70,56 @@
             background: #09090b;
             display: flex;
             flex-direction: column;
-            padding: 1.25rem;
+            padding: 2vmin;
             position: relative;
-            border: 2px solid #27272a;
+            border: 1.5px solid #27272a;
             overflow: hidden;
             background-image: radial-gradient(#27272a 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
+            background-size: 15px 15px;
         }
 
         .token { 
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
             z-index: 50; 
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
-            width: 4.5vmin;
-            height: 4.5vmin;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+            width: 4vmin;
+            height: 4vmin;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            border: 2px solid white;
-            font-size: 2.5vmin;
+            border: 1px solid white;
+            font-size: 2.2vmin;
             position: absolute;
         }
 
         .house-dot {
-            width: 7px;
-            height: 7px;
+            width: 1.2vmin;
+            height: 1.2vmin;
             border-radius: 50%;
             background: #22c55e;
-            box-shadow: 0 0 5px #22c55e;
+            box-shadow: 0 0 3px #22c55e;
         }
 
-        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(8deg); } 75% { transform: rotate(-8deg); } }
         .rolling { animation: shake 0.1s infinite; }
 
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar { width: 3px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
         
-        .glow-orange { box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); }
-        .btn-papua { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); transition: all 0.2s; }
-        .btn-papua:active { transform: scale(0.95); opacity: 0.9; }
-
+        .btn-papua { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); touch-action: manipulation; }
+        
         .winner-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             z-index: 100;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            animation: fadeIn 1s ease-out;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -158,7 +155,7 @@
             { name: "Pantai Base G", type: "prop", color: "#8b4513", price: 600000, rent: [40000, 200000, 600000, 1800000], build: 500000 },
             { name: "Suara Rakyat", type: "event" },
             { name: "Danau Sentani", type: "prop", color: "#8b4513", price: 600000, rent: [40000, 200000, 600000, 1800000], build: 500000 },
-            { name: "Denda Restribusi", type: "tax", price: 2000000 },
+            { name: "Pajak Masuk", type: "tax", price: 2000000 },
             { name: "Bandara Sentani", type: "airport", price: 2000000 },
             { name: "Biak Kota", type: "prop", color: "#0ea5e9", price: 1000000, rent: [60000, 300000, 900000, 2500000], build: 500000 },
             { name: "Peluang", type: "event" },
@@ -196,30 +193,23 @@
             { name: "Puncak JPR", type: "prop", color: "#2563eb", price: 4000000, rent: [500000, 2000000, 6000000, 13000000], build: 2000000 }
         ];
 
+        const TOKENS = ["🦜", "🐊", "🛶", "🐍", "🦘"];
         const EVENT_CARDS = [
-            { text: "Hasil Mas Kawin Keluarga! Dapat +Rp1 Jt", pay: 1000000 },
-            { text: "Tabrak babi di jalan! Bayar Denda -Rp1,5 Jt", pay: -1500000 },
-            { text: "Menang Lomba Molo Danau Sentani! Dapat +Rp500 K", pay: 500000 },
-            { text: "Melanggar batas wilayah adat! Masuk Penjara", goto: 10, jail: 3 },
-            { text: "Kunjungan Kerja ke Jayapura!", goto: 39 },
-            { text: "Bantuan Dana Desa! Dapat +Rp2 Jt", pay: 2000000 }
+            { text: "Bagi hasil mas kawin! +Rp1 Jt", pay: 1000000 },
+            { text: "Denda tabrak babi! -Rp1,5 Jt", pay: -1500000 },
+            { text: "Menang Lomba Molo! +Rp500 K", pay: 500000 },
+            { text: "Salah jalan ke Penjara Adat!", goto: 10, jail: 3 },
+            { text: "Kunjungan ke Jayapura!", goto: 39 },
+            { text: "Bantuan Dana Kampung! +Rp2 Jt", pay: 2000000 }
         ];
 
-        const TOKENS = ["🦜", "🐊", "🛶", "🐍", "🦘"];
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'papua-monopoly-v5';
-
         const formatGameMoney = (val) => {
-            const isNegative = val < 0;
             const absVal = Math.abs(val);
-            let str = "";
-            if (absVal >= 1000000) {
-                str = (absVal / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + " Jt";
-            } else if (absVal >= 1000) {
-                str = (absVal / 1000).toLocaleString('id-ID') + " K";
-            } else {
-                str = absVal.toString();
-            }
-            return (isNegative ? "-" : "") + "Rp" + str;
+            let s = "";
+            if (absVal >= 1000000) s = (absVal/1000000).toLocaleString('id-ID', {maximumFractionDigits:1}) + " Jt";
+            else if (absVal >= 1000) s = (absVal/1000).toLocaleString('id-ID') + " K";
+            else s = absVal.toString();
+            return (val < 0 ? "-" : "") + "Rp" + s;
         }
 
         function App() {
@@ -238,18 +228,15 @@
             };
 
             useEffect(() => {
-                const { auth, signInAnonymously, onAuthStateChanged } = window.FB;
-                onAuthStateChanged(auth, u => {
+                window.FB.onAuthStateChanged(window.FB.auth, u => {
                     if (u) setUser(u);
-                    else signInAnonymously(auth);
+                    else window.FB.signInAnonymously(window.FB.auth);
                 });
             }, []);
 
             useEffect(() => {
                 if (!roomID || !user) return;
-                const path = `rooms`; 
-                const docRef = window.FB.doc(window.FB.db, path, roomID);
-                return window.FB.onSnapshot(docRef, snap => {
+                return window.FB.onSnapshot(window.FB.doc(window.FB.db, "rooms", roomID), snap => {
                     if (snap.exists()) {
                         const data = snap.data();
                         setGameState(data);
@@ -262,22 +249,18 @@
             }, [roomID, user]);
 
             const joinGame = async (role) => {
-                if (!playerName) return alert("Siapa namamu?");
-                const id = role === 'host' ? "ROOM-" + Math.floor(1000 + Math.random() * 9000) : roomID;
-                if (!id) return alert("Kode Room tidak ada!");
+                if (!playerName) return alert("Siapa nama?");
+                const id = role === 'host' ? "P-" + Math.floor(1000 + Math.random() * 9000) : roomID;
+                if (!id) return alert("Isi Kode!");
 
-                const path = `rooms`;
-                const docRef = window.FB.doc(window.FB.db, path, id);
+                const docRef = window.FB.doc(window.FB.db, "rooms", id);
                 const snap = await window.FB.getDoc(docRef);
+                let data = snap.exists() ? snap.data() : { players: [], status: 'waiting', turn: 0, dice: [1,1], logs: ["Sio mama, mari main!"], props: {}, utilRates: { pln: 0, pam: 0 } };
                 
-                let data = snap.exists() ? snap.data() : { 
-                    players: [], status: 'waiting', turn: 0, dice: [1,1], logs: ["Siap berpetualang!"], props: {}, utilRates: { pln: 0, pam: 0 } 
-                };
-
                 if (data.players.length >= 4) return alert("Penuh!");
                 if (!data.players.find(p => p.uid === user.uid)) {
-                    data.players.push({ uid: user.uid, name: playerName, token: selectedToken, money: 15000000, pos: 0, color: `hsl(${Math.random()*360}, 65%, 60%)`, isHost: role === 'host', inJail: 0, isBankrupt: false });
-                    data.logs.push(`${playerName} bergabung.`);
+                    data.players.push({ uid: user.uid, name: playerName, token: selectedToken, money: 15000000, pos: 0, color: `hsl(${Math.random()*360}, 70%, 55%)`, isHost: role === 'host', inJail: 0, isBankrupt: false });
+                    data.logs.push(`${playerName} masuk.`);
                 }
                 setRoomID(id);
                 await window.FB.setDoc(docRef, data);
@@ -287,8 +270,7 @@
             const rollDice = async () => {
                 if (isRolling) return;
                 const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
-                if (gameState.turn !== myIdx) return;
-                if (gameState.players[myIdx].isBankrupt) return nextTurn();
+                if (gameState.turn !== myIdx || gameState.players[myIdx].isBankrupt) return;
 
                 setIsRolling(true);
                 const d1 = Math.floor(Math.random()*6)+1;
@@ -301,22 +283,21 @@
                     steps++;
                     if (steps >= total) {
                         clearInterval(anim);
-                        executeMove(d1, d2, total);
+                        finishTurn(d1, d2, total);
                     }
                 }, 150);
             };
 
-            const executeMove = async (d1, d2, total) => {
+            const finishTurn = async (d1, d2, total) => {
                 const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
                 let players = [...gameState.players];
                 let props = { ...gameState.props };
-                let logs = [...gameState.logs].slice(-15);
-                let rates = { ...gameState.utilRates };
+                let logs = [...gameState.logs].slice(-10);
                 let p = players[myIdx];
 
                 if (p.inJail > 0) {
-                    if (d1 === d2) { p.inJail = 0; logs.push(`${p.name} Bebas!`); }
-                    else { p.inJail--; logs.push(`${p.name} tertahan di penjara.`); }
+                    if (d1 === d2) { p.inJail = 0; logs.push(`${p.name} bebas!`); }
+                    else { p.inJail--; logs.push(`${p.name} skip giliran.`); }
                 } else {
                     const oldPos = p.pos;
                     p.pos = (p.pos + total) % 40;
@@ -327,63 +308,32 @@
 
                     if (tile.type === 'event') {
                         const card = EVENT_CARDS[Math.floor(Math.random()*EVENT_CARDS.length)];
-                        logs.push(`[EVENT] ${card.text}`);
+                        logs.push(`Kartu: ${card.text}`);
                         if (card.pay) p.money += card.pay;
                         if (card.goto !== undefined) p.pos = card.goto;
                         if (card.jail) p.inJail = card.jail;
                     }
 
-                    if (tile.type === 'tax') { p.money -= tile.price; logs.push(`Bayar ${tile.name} ${formatGameMoney(tile.price)}`); }
-                    if (tile.type === 'gotojail') { p.pos = 10; p.inJail = 3; logs.push(`${p.name} ditangkap aparat!`); }
+                    if (tile.type === 'tax') { p.money -= tile.price; logs.push(`Bayar Pajak ${formatGameMoney(tile.price)}`); }
+                    if (tile.type === 'gotojail') { p.pos = 10; p.inJail = 3; logs.push(`${p.name} ke Penjara!`); }
 
-                    const prop = props[p.pos];
-                    if (prop && prop.owner !== user.uid) {
-                        const ownerIdx = players.findIndex(pl => pl.uid === prop.owner);
-                        const rent = tile.type === 'prop' ? tile.rent[prop.houses] : 500000;
+                    const currentProp = props[p.pos];
+                    if (currentProp && currentProp.owner !== user.uid) {
+                        const ownerIdx = players.findIndex(pl => pl.uid === currentProp.owner);
+                        const rent = tile.type === 'prop' ? tile.rent[currentProp.houses] : 500000;
                         p.money -= rent;
                         players[ownerIdx].money += rent;
-                        logs.push(`Sewa ${formatGameMoney(rent)} ke ${players[ownerIdx].name}`);
-                    }
-
-                    if (tile.type === 'prop') {
-                        const pln = props[12];
-                        if (pln && pln.owner !== user.uid && rates.pln > 0) {
-                            const fee = Math.min(rates.pln, tile.price);
-                            p.money -= fee;
-                            players[players.findIndex(pl=>pl.uid===pln.owner)].money += fee;
-                            logs.push(`Biaya PLN ${formatGameMoney(fee)}`);
-                        }
-                        const pam = props[28];
-                        if (pam && pam.owner !== user.uid && rates.pam > 0) {
-                            const fee = Math.min(rates.pam, tile.price);
-                            p.money -= fee;
-                            players[players.findIndex(pl=>pl.uid===pam.owner)].money += fee;
-                            logs.push(`Biaya PAM ${formatGameMoney(fee)}`);
-                        }
+                        logs.push(`Sewa ke ${players[ownerIdx].name}`);
                     }
                 }
 
-                // Bankruptcy check
-                if (p.money <= 0) {
-                    p.isBankrupt = true;
-                    p.money = 0;
-                    logs.push(`🚨 ${p.name} TELAH BANGKRUT!`);
-                }
+                if (p.money <= 0) { p.isBankrupt = true; p.money = 0; logs.push(`🚨 ${p.name} BANGKRUT!`); }
 
-                await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { 
-                    dice: [d1, d2], players, logs, turn: nextActiveTurn(players, gameState.turn) 
-                });
+                let nextTurn = (gameState.turn + 1) % players.length;
+                while (players[nextTurn].isBankrupt) nextTurn = (nextTurn + 1) % players.length;
+
+                await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { dice: [d1,d2], players, logs, turn: nextTurn });
                 setIsRolling(false);
-            };
-
-            const nextActiveTurn = (players, currentTurn) => {
-                let next = (currentTurn + 1) % players.length;
-                let count = 0;
-                while (players[next].isBankrupt && count < players.length) {
-                    next = (next + 1) % players.length;
-                    count++;
-                }
-                return next;
             };
 
             const manageProp = async (type) => {
@@ -400,69 +350,57 @@
                 } else if (type === 'build' && props[pos]?.owner === user.uid && players[myIdx].money >= tile.build && props[pos].houses < 3) {
                     players[myIdx].money -= tile.build;
                     props[pos].houses += 1;
-                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${playerName} bangun Honai di ${tile.name}`] });
+                    await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { players, props, logs: [...gameState.logs, `${playerName} bangun Honai`] });
                 }
-            };
-
-            const setRate = async (type) => {
-                const val = prompt(`Set tarif ${type.toUpperCase()} (Batas: Harga beli properti):`, 100000);
-                if (val === null || isNaN(val)) return;
-                let utilRates = { ...gameState.utilRates };
-                utilRates[type] = parseInt(val);
-                await window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { utilRates, logs: [...gameState.logs, `${playerName} mengatur tarif ${type}`] });
             };
 
             const winner = useMemo(() => {
                 if (!gameState || gameState.status !== 'playing') return null;
-                const actives = gameState.players.filter(p => !p.isBankrupt);
-                if (actives.length === 1 && gameState.players.length > 1) return actives[0];
-                return null;
+                const active = gameState.players.filter(p => !p.isBankrupt);
+                return active.length === 1 && gameState.players.length > 1 ? active[0] : null;
             }, [gameState]);
 
             if (screen === 'landing') return (
-                <div className="flex flex-col items-center justify-center space-y-12">
-                    <div className="text-center">
-                        <h1 className="text-8xl font-black text-orange-500 italic tracking-tighter">PAPUA</h1>
-                        <p className="text-[11px] tracking-[0.4em] text-zinc-500 font-bold uppercase mt-3">Online Monopoly Pro</p>
-                    </div>
-                    <div className="w-80 space-y-4">
-                        <input className="w-full bg-zinc-900 border border-zinc-800 p-5 rounded-[2rem] text-white outline-none focus:ring-2 ring-orange-500 transition-all text-center" placeholder="Nama PACE / MACE" value={playerName} onChange={e=>setPlayerName(e.target.value)} />
-                        <div className="flex justify-between bg-zinc-900 p-4 rounded-[2rem] border border-zinc-800">
-                            {TOKENS.map(t => <button key={t} onClick={()=>setSelectedToken(t)} className={`text-4xl p-2 rounded-2xl transition-all ${selectedToken===t?'bg-orange-600 scale-110 shadow-lg':'opacity-20 hover:opacity-50'}`}>{t}</button>)}
+                <div className="flex flex-col items-center justify-center space-y-6 text-center">
+                    <h1 className="text-6xl font-black text-orange-500 italic tracking-tighter mb-4">PAPUA</h1>
+                    <div className="w-72 space-y-4">
+                        <input className="w-full bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-center" placeholder="Nama PACE / MACE" value={playerName} onChange={e=>setPlayerName(e.target.value)} />
+                        <div className="flex justify-around bg-zinc-900 p-2 rounded-2xl border border-zinc-800">
+                            {TOKENS.map(t => <button key={t} onClick={()=>setSelectedToken(t)} className={`text-3xl p-1 rounded-xl transition-all ${selectedToken===t?'bg-orange-600 scale-110 shadow-lg':'opacity-20'}`}>{t}</button>)}
                         </div>
-                        <div className="flex gap-4">
-                            <button onClick={()=>joinGame('host')} className="flex-1 btn-papua py-5 rounded-[2rem] font-black text-lg shadow-xl text-white uppercase">Host</button>
-                            <button onClick={()=>setScreen('join')} className="flex-1 bg-zinc-800 py-5 rounded-[2rem] font-black text-lg uppercase">Gabung</button>
+                        <div className="flex gap-3">
+                            <button onClick={()=>joinGame('host')} className="flex-1 btn-papua py-4 rounded-2xl font-black text-lg text-white">HOST</button>
+                            <button onClick={()=>setScreen('join')} className="flex-1 bg-zinc-800 py-4 rounded-2xl font-black text-lg">GABUNG</button>
                         </div>
                     </div>
                 </div>
             );
 
             if (screen === 'join') return (
-                <div className="bg-zinc-900 p-12 rounded-[4rem] w-80 text-center space-y-8 border border-zinc-800 shadow-2xl">
-                    <h2 className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest text-white">KODE RUANGAN</h2>
-                    <input className="w-full bg-zinc-800 p-6 rounded-3xl text-4xl font-black text-center tracking-widest border border-zinc-700 outline-none" placeholder="ROOM-XXXX" value={roomID} onChange={e=>setRoomID(e.target.value.toUpperCase())} />
-                    <button onClick={()=>joinGame('client')} className="w-full btn-papua py-5 rounded-3xl font-black text-xl text-white uppercase">Masuk</button>
-                    <button onClick={()=>setScreen('landing')} className="text-zinc-600 text-sm font-bold">Kembali</button>
+                <div className="bg-zinc-900 p-8 rounded-[3rem] w-72 text-center space-y-6 border border-zinc-800 shadow-2xl">
+                    <h2 className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest text-white">KODE ROOM</h2>
+                    <input className="w-full bg-zinc-800 p-4 rounded-xl text-3xl font-black text-center border border-zinc-700 outline-none" placeholder="P-XXXX" value={roomID} onChange={e=>setRoomID(e.target.value.toUpperCase())} />
+                    <button onClick={()=>joinGame('client')} className="w-full btn-papua py-4 rounded-xl font-black text-white">GABUNG</button>
+                    <button onClick={()=>setScreen('landing')} className="text-zinc-500 text-xs font-bold block mx-auto">Batal</button>
                 </div>
             );
 
             if (screen === 'lobby') return (
-                <div className="bg-zinc-900 p-12 rounded-[5rem] w-96 space-y-10 border border-zinc-800 shadow-2xl">
-                    <div className="text-center space-y-1">
-                        <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Kode Room</p>
-                        <p className="text-6xl font-black text-orange-500 tracking-tighter">{roomID}</p>
+                <div className="bg-zinc-900 p-8 rounded-[3rem] w-80 space-y-6 border border-zinc-800">
+                    <div className="text-center">
+                        <p className="text-[10px] text-zinc-500 font-bold">KODE RUANGAN</p>
+                        <p className="text-5xl font-black text-orange-500">{roomID}</p>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {gameState?.players.map(p => (
-                            <div key={p.uid} className="bg-zinc-800 p-5 rounded-[2.5rem] border border-zinc-800 flex justify-between items-center px-8">
-                                <span className="font-bold text-2xl">{p.token} {p.name}</span>
-                                {p.isHost && <span className="text-[8px] bg-orange-500 px-3 py-1 rounded-full font-black uppercase text-white">Owner</span>}
+                            <div key={p.uid} className="bg-zinc-800 p-4 rounded-2xl flex justify-between items-center border border-zinc-800">
+                                <span className="font-bold text-lg">{p.token} {p.name}</span>
+                                {p.isHost && <span className="text-[8px] bg-orange-500 px-2 py-1 rounded-full font-black uppercase">Host</span>}
                             </div>
                         ))}
                     </div>
                     {gameState?.players.find(p=>p.uid===user.uid)?.isHost && (
-                        <button onClick={()=>window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { status: 'playing' })} className="w-full bg-white text-black py-6 rounded-[3rem] font-black text-2xl shadow-xl hover:bg-orange-500 hover:text-white transition-colors uppercase">Mulai Game</button>
+                        <button onClick={()=>window.FB.updateDoc(window.FB.doc(window.FB.db,"rooms",roomID),{status:'playing'})} className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase">Mulai!</button>
                     )}
                 </div>
             );
@@ -474,102 +412,90 @@
                 const tile = TILES_DATA[vPos];
                 const props = gameState.props || {};
                 const ownerUid = props[vPos]?.owner;
-                
+
                 return (
                     <div className="game-wrapper">
                         {winner && (
                             <div className="winner-overlay">
-                                <h1 className="text-6xl font-black text-orange-500 mb-4 uppercase italic">Kemenangan!</h1>
-                                <div className="text-9xl mb-6">{winner.token}</div>
-                                <h2 className="text-4xl font-black text-white uppercase">{winner.name} Menang!</h2>
-                                <p className="mt-4 text-zinc-500 font-bold uppercase tracking-widest">Telah Menguasai Tanah Papua</p>
-                                <button onClick={()=>window.location.reload()} className="mt-12 bg-white text-black px-12 py-5 rounded-3xl font-black uppercase shadow-2xl">Main Lagi</button>
+                                <h1 className="text-5xl font-black text-orange-500 mb-2 italic">MENANG!</h1>
+                                <div className="text-8xl mb-4">{winner.token}</div>
+                                <h2 className="text-3xl font-black text-white">{winner.name}</h2>
+                                <button onClick={()=>window.location.reload()} className="mt-8 bg-white text-black px-10 py-4 rounded-2xl font-black">MAIN LAGI</button>
                             </div>
                         )}
 
                         <div className="board-grid">
                             {TILES_DATA.map((t, i) => (
                                 <div key={i} className="tile" style={getTileStyle(i)}>
-                                    {t.color && <div className="h-[25%] w-full shadow-inner" style={{ background: t.color }} />}
-                                    <div className="flex-1 flex flex-col items-center justify-center p-1.5 font-black uppercase leading-none">
+                                    {t.color && <div className="h-[25%] w-full" style={{ background: t.color }} />}
+                                    <div className="flex-1 flex flex-col items-center justify-center p-0.5 uppercase leading-none font-black">
                                         <span className="mb-0.5">{t.name}</span>
-                                        {t.price > 0 && <span className="text-[0.4rem] text-orange-600 font-black mt-1 uppercase">{formatGameMoney(t.price)}</span>}
+                                        {t.price > 0 && <span className="text-orange-600 text-[0.4rem]">{formatGameMoney(t.price)}</span>}
                                     </div>
-                                    {props[i] && <div className="absolute top-1 right-1 w-3 h-3 rounded-full border border-black/20" style={{ background: gameState.players.find(p=>p.uid===props[i].owner)?.color }}></div>}
-                                    {props[i]?.houses > 0 && <div className="absolute top-[22%] w-full flex justify-center gap-1">{[...Array(props[i].houses)].map((_,idx)=><div key={idx} className="house-dot"></div>)}</div>}
+                                    {props[i] && <div className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full" style={{ background: gameState.players.find(p=>p.uid===props[i].owner)?.color }}></div>}
+                                    {props[i]?.houses > 0 && <div className="absolute top-[22%] w-full flex justify-center gap-0.5">{[...Array(props[i].houses)].map((_,idx)=><div key={idx} className="house-dot"></div>)}</div>}
                                 </div>
                             ))}
 
                             <div className="center-dash">
-                                <div className="flex-1 flex flex-col items-center justify-between py-4">
-                                    <div className="grid grid-cols-2 gap-3 w-full">
+                                <div className="flex-1 flex flex-col items-center justify-between">
+                                    {/* Stats HUD (Lebih ramping) */}
+                                    <div className="grid grid-cols-2 gap-1.5 w-full">
                                         {gameState.players.map((p, idx) => (
-                                            <div key={p.uid} className={`p-4 rounded-3xl border transition-all ${p.isBankrupt ? 'grayscale opacity-20' : (gameState.turn===idx?'bg-zinc-800 border-orange-500 ring-2 ring-orange-500/30 shadow-lg':'bg-zinc-950 border-zinc-900 opacity-40')} flex items-center gap-4 relative`}>
-                                                <span className="text-3xl">{p.token}</span>
-                                                <div className="flex flex-col overflow-hidden">
-                                                    <span className="text-[10px] font-black text-zinc-500 uppercase truncate w-24">{p.name}</span>
-                                                    <span className="text-sm font-black text-green-500 whitespace-nowrap">{p.isBankrupt ? "BANGKRUT" : formatGameMoney(p.money)}</span>
+                                            <div key={p.uid} className={`p-2 rounded-2xl border transition-all ${p.isBankrupt?'opacity-10 grayscale':(gameState.turn===idx?'bg-zinc-800 border-orange-500 ring-2 ring-orange-500/20':'bg-zinc-950 border-zinc-900 opacity-40')} flex items-center gap-2 overflow-hidden`}>
+                                                <span className="text-xl">{p.token}</span>
+                                                <div className="flex flex-col truncate">
+                                                    <span className="text-[0.5rem] font-bold text-zinc-500 uppercase truncate">{p.name}</span>
+                                                    <span className="text-[0.65rem] font-black text-green-500">{formatGameMoney(p.money)}</span>
                                                 </div>
-                                                {p.isBankrupt && <div className="absolute inset-0 bg-red-600/20 rounded-3xl flex items-center justify-center font-black text-red-500 text-[8px] uppercase tracking-widest">OUT</div>}
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="w-full max-w-sm bg-zinc-900/80 rounded-[2.5rem] p-8 border border-zinc-800 flex flex-col items-center space-y-6 shadow-inner">
+                                    {/* Action Box */}
+                                    <div className="w-full bg-zinc-900/60 rounded-[2rem] p-4 border border-zinc-800 flex flex-col items-center space-y-3">
                                         <div className="flex gap-4">
-                                            <div className={`w-16 h-16 bg-white rounded-2xl text-black flex items-center justify-center text-4xl font-black shadow-2xl ${isRolling?'rolling':''}`}>{gameState.dice[0]}</div>
-                                            <div className={`w-16 h-16 bg-white rounded-2xl text-black flex items-center justify-center text-4xl font-black shadow-2xl ${isRolling?'rolling':''}`}>{gameState.dice[1]}</div>
+                                            <div className={`w-12 h-12 bg-white rounded-xl text-black flex items-center justify-center text-3xl font-black shadow-lg ${isRolling?'rolling':''}`}>{gameState.dice[0]}</div>
+                                            <div className={`w-12 h-12 bg-white rounded-xl text-black flex items-center justify-center text-3xl font-black shadow-lg ${isRolling?'rolling':''}`}>{gameState.dice[1]}</div>
                                         </div>
                                         
                                         {isMyTurn && !isRolling && !gameState.players[myIdx].isBankrupt ? (
-                                            <div className="w-full flex flex-col gap-3">
-                                                <button onClick={rollDice} className="w-full btn-papua py-5 rounded-[2rem] font-black text-xl shadow-xl glow-orange text-white uppercase">Kocok Dadu</button>
-                                                
+                                            <div className="w-full flex flex-col gap-2">
+                                                <button onClick={rollDice} className="w-full btn-papua py-3 rounded-2xl font-black text-base shadow-xl text-white uppercase">Kocok Dadu</button>
                                                 <div className="flex gap-2">
                                                     {!ownerUid && ['prop','airport','port','util'].includes(tile.type) && (
-                                                        <button onClick={()=>manageProp('buy')} className="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-[9px] uppercase tracking-widest text-white">Beli {tile.name} ({formatGameMoney(tile.price)})</button>
+                                                        <button onClick={()=>manageProp('buy')} className="flex-1 bg-blue-600 py-2.5 rounded-xl font-black text-[0.5rem] uppercase text-white">Beli {tile.name}</button>
                                                     )}
                                                     {ownerUid===user.uid && tile.type==='prop' && props[vPos].houses < 3 && (
-                                                        <button onClick={()=>manageProp('build')} className="flex-1 bg-green-600 py-4 rounded-2xl font-black text-[9px] uppercase tracking-widest text-white">Bangun Honai ({formatGameMoney(tile.build)})</button>
+                                                        <button onClick={()=>manageProp('build')} className="flex-1 bg-green-600 py-2.5 rounded-xl font-black text-[0.5rem] uppercase text-white">Bangun Honai</button>
                                                     )}
-                                                </div>
-
-                                                <div className="flex gap-2">
-                                                    {props[12]?.owner === user.uid && <button onClick={()=>setRate('pln')} className="flex-1 bg-zinc-800 text-yellow-500 py-3 rounded-2xl text-[9px] font-black border border-yellow-500/20 uppercase tracking-tighter">Set Tarif PLN</button>}
-                                                    {props[28]?.owner === user.uid && <button onClick={()=>setRate('pam')} className="flex-1 bg-zinc-800 text-blue-500 py-3 rounded-2xl text-[9px] font-black border border-blue-500/20 uppercase tracking-tighter">Set Tarif PAM</button>}
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="text-center">
-                                                <p className="text-zinc-700 font-black uppercase tracking-[0.4em] text-[10px] mb-1">
-                                                    {gameState.players[myIdx].isBankrupt ? "ANDA BANGKRUT" : "Giliran Sekarang"}
-                                                </p>
-                                                <p className="text-2xl font-black text-white italic tracking-tighter truncate w-48 uppercase">
-                                                    {gameState.players[gameState.turn].name}
-                                                </p>
+                                            <div className="text-center py-2">
+                                                <p className="text-[0.5rem] font-black text-zinc-600 uppercase tracking-widest mb-1">Giliran</p>
+                                                <p className="text-lg font-black text-white italic truncate w-32 uppercase">{gameState.players[gameState.turn].name}</p>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="w-full h-24 bg-zinc-950/80 p-4 rounded-[1.5rem] border border-zinc-900 overflow-hidden flex flex-col">
-                                        <div className="flex-1 overflow-y-auto space-y-2 custom-scroll">
-                                            {gameState.logs.slice().reverse().map((log, i) => <div key={i} className="text-[10px] text-zinc-500 border-l-4 border-zinc-800 pl-4 py-1 font-medium">{log}</div>)}
+                                    {/* Mini Log */}
+                                    <div className="w-full h-16 bg-zinc-950/60 p-2 rounded-xl border border-zinc-900 overflow-hidden">
+                                        <div className="flex-1 overflow-y-auto custom-scroll h-full">
+                                            {gameState.logs.slice().reverse().map((log, i) => <div key={i} className="text-[0.45rem] text-zinc-500 border-l-2 border-zinc-800 pl-2 mb-1">{log}</div>)}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Token Layer */}
                             {gameState.players.map((p, idx) => !p.isBankrupt && (
-                                <div 
-                                    key={p.uid} 
-                                    className="token shadow-2xl" 
-                                    style={{ 
-                                        background: p.color, 
-                                        gridRow: getTileStyle(localPos[p.uid] || 0).gridRow, 
-                                        gridColumn: getTileStyle(localPos[p.uid] || 0).gridColumn,
-                                        transform: `translate(${(idx*12)-18}%, ${(idx*12)-18}%)` 
-                                    }}
-                                >
+                                <div key={p.uid} className="token shadow-xl" style={{ 
+                                    background: p.color, 
+                                    gridRow: getTileStyle(localPos[p.uid] || 0).gridRow, 
+                                    gridColumn: getTileStyle(localPos[p.uid] || 0).gridColumn,
+                                    transform: `translate(${(idx*8)-12}%, ${(idx*8)-12}%)` 
+                                }}>
                                     {p.token}
                                 </div>
                             ))}
@@ -577,8 +503,7 @@
                     </div>
                 );
             }
-
-            return <div className="h-screen flex items-center justify-center font-black text-orange-500 text-4xl animate-pulse italic uppercase">Ekspedisi Papua...</div>;
+            return <div className="font-black text-orange-500 text-3xl animate-pulse">PAPUA...</div>;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -586,3 +511,4 @@
     </script>
 </body>
 </html>
+
