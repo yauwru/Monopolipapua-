@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monopoly Papua Online</title>
+    
+    <!-- Load React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #09090b; 
+            color: white; 
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .board-grid { 
+            display: grid; 
+            grid-template-columns: repeat(11, 1fr); 
+            grid-template-rows: repeat(11, 1fr); 
+            aspect-ratio: 1/1; 
+            width: 100%; 
+            max-width: 600px; 
+            margin: auto;
+            background: #18181b;
+            border: 4px solid #27272a;
+        }
+        .tile { 
+            border: 0.1px solid #3f3f46; 
+            position: relative; 
+            background: white; 
+            color: #18181b; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            font-size: 0.5rem; 
+            font-weight: 800; 
+            text-align: center;
+        }
+        .tile-header { height: 20%; width: 100%; border-bottom: 1px solid #000; }
+        .token { 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 50;
+        }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="flex items-center justify-center min-h-screen">
+            <p class="animate-pulse">Memuat Game...</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (ESM) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPSs5fJjfbWvFlYMjZqrG4eZAstvKsHgg",
+            authDomain: "polipa-30a84.firebaseapp.com",
+            projectId: "polipa-30a84",
+            storageBucket: "polipa-30a84.firebasestorage.app",
+            messagingSenderId: "305278736815",
+            appId: "1:305278736815:web:133040b603d90e005c775a"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Expose to window so Babel script can access
+        window.FB = { auth, db, doc, setDoc, onSnapshot, updateDoc, getDoc, signInAnonymously, onAuthStateChanged };
+    </script>
+
+    <!-- Game Logic -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const TILES_DATA = [
+            { name: "MULAI", type: "start" },
+            { name: "Pantai Base G", type: "prop", color: "#78350f", price: 600000, rent: 40000 },
+            { name: "Suara Rakyat", type: "event" },
+            { name: "Danau Sentani", type: "prop", color: "#78350f", price: 600000, rent: 40000 },
+            { name: "Pajak Masuk", type: "tax", price: 2000000 },
+            { name: "Bandara Sentani", type: "airport", price: 2000000, rent: 250000 },
+            { name: "Biak Kota", type: "prop", color: "#0ea5e9", price: 1000000, rent: 60000 },
+            { name: "Peluang", type: "event" },
+            { name: "Supiori", type: "prop", color: "#0ea5e9", price: 1000000, rent: 60000 },
+            { name: "Yapen", type: "prop", color: "#0ea5e9", price: 1200000, rent: 80000 },
+            { name: "PENJARA", type: "jail" },
+            { name: "Wamena", type: "prop", color: "#d946ef", price: 1400000, rent: 100000 },
+            { name: "PLN", type: "util", price: 1500000 },
+            { name: "Lembah Baliem", type: "prop", color: "#d946ef", price: 1400000, rent: 100000 },
+            { name: "Puncak Jaya", type: "prop", color: "#d946ef", price: 1600000, rent: 120000 },
+            { name: "Pelabuhan Jayapura", type: "port", price: 2000000, rent: 250000 },
+            { name: "Timika", type: "prop", color: "#f97316", price: 1800000, rent: 140000 },
+            { name: "Suara Rakyat", type: "event" },
+            { name: "Tembagapura", type: "prop", color: "#f97316", price: 1800000, rent: 140000 },
+            { name: "Asmat", type: "prop", color: "#f97316", price: 2000000, rent: 160000 },
+            { name: "PARKIR BEBAS", type: "park" },
+            { name: "Manokwari", type: "prop", color: "#ef4444", price: 2200000, rent: 180000 },
+            { name: "Peluang", type: "event" },
+            { name: "Wondama", type: "prop", color: "#ef4444", price: 2200000, rent: 180000 },
+            { name: "Fakfak", type: "prop", color: "#ef4444", price: 2400000, rent: 200000 },
+            { name: "Bandara Mopah", type: "airport", price: 2000000, rent: 250000 },
+            { name: "Merauke", type: "prop", color: "#eab308", price: 2600000, rent: 220000 },
+            { name: "Boven Digoel", type: "prop", color: "#eab308", price: 2600000, rent: 220000 },
+            { name: "PAM", type: "util", price: 1500000 },
+            { name: "Tanah Merah", type: "prop", color: "#eab308", price: 2800000, rent: 240000 },
+            { name: "MASUK PENJARA", type: "gotojail" },
+            { name: "Sorong Kota", type: "prop", color: "#16a34a", price: 3000000, rent: 260000 },
+            { name: "Raja Ampat", type: "prop", color: "#16a34a", price: 3000000, rent: 260000 },
+            { name: "Suara Rakyat", type: "event" },
+            { name: "Piaynemo", type: "prop", color: "#16a34a", price: 3200000, rent: 280000 },
+            { name: "Pelabuhan Sorong", type: "port", price: 2000000, rent: 250000 },
+            { name: "Peluang", type: "event" },
+            { name: "Jayapura", type: "prop", color: "#2563eb", price: 3500000, rent: 350000 },
+            { name: "Denda Adat", type: "tax", price: 3000000 },
+            { name: "Puncak Jayapura", type: "prop", color: "#2563eb", price: 4000000, rent: 500000 }
+        ];
+
+        const TOKENS = ["🦜", "🐊", "🛶", "🐍", "🦘"];
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [roomID, setRoomID] = useState("");
+            const [playerName, setPlayerName] = useState("");
+            const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
+            const [gameState, setGameState] = useState(null);
+            const [screen, setScreen] = useState('landing');
+            const [isRolling, setIsRolling] = useState(false);
+
+            useEffect(() => {
+                if (!window.FB) return;
+                const { auth, signInAnonymously, onAuthStateChanged } = window.FB;
+                
+                const unsubscribe = onAuthStateChanged(auth, (u) => {
+                    if (u) setUser(u);
+                    else signInAnonymously(auth);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            useEffect(() => {
+                if (!roomID || !user || !window.FB) return;
+                const { db, doc, onSnapshot } = window.FB;
+                
+                const docRef = doc(db, "rooms", roomID);
+                const unsubscribe = onSnapshot(docRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        setGameState(data);
+                        if (data.status === 'playing') setScreen('game');
+                    }
+                });
+                return () => unsubscribe();
+            }, [roomID, user]);
+
+            const joinRoom = async (role) => {
+                if (!playerName) return alert("Masukkan nama!");
+                let targetRoom = roomID;
+                if (role === 'host') {
+                    targetRoom = "P-" + Math.floor(1000 + Math.random() * 9000);
+                    setRoomID(targetRoom);
+                }
+                if (!targetRoom) return alert("Masukkan Kode Room!");
+
+                const { db, doc, getDoc, setDoc } = window.FB;
+                const docRef = doc(db, "rooms", targetRoom);
+                const snap = await getDoc(docRef);
+                
+                let data = snap.exists() ? snap.data() : { 
+                    players: [], 
+                    status: 'waiting', 
+                    turn: 0, 
+                    dice: [1, 1], 
+                    logs: ["Selamat datang di Papua!"], 
+                    props: {} 
+                };
+
+                if (data.players.length >= 4) return alert("Room penuh!");
+
+                const isJoined = data.players.find(p => p.uid === user.uid);
+                if (!isJoined) {
+                    data.players.push({
+                        uid: user.uid,
+                        name: playerName,
+                        token: selectedToken,
+                        money: 15000000,
+                        pos: 0,
+                        color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                        isHost: role === 'host'
+                    });
+                    data.logs.push(`${playerName} bergabung.`);
+                }
+                await setDoc(docRef, data);
+                setScreen('lobby');
+            };
+
+            const rollDice = async () => {
+                if (isRolling) return;
+                const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
+                if (gameState.turn !== myIdx) return;
+
+                setIsRolling(true);
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                const total = d1 + d2;
+
+                setTimeout(async () => {
+                    let players = [...gameState.players];
+                    let props = { ...gameState.props };
+                    let logs = [...gameState.logs].slice(-8);
+                    let cur = players[myIdx];
+                    
+                    const oldPos = cur.pos;
+                    cur.pos = (cur.pos + total) % 40;
+                    if (cur.pos < oldPos) cur.money += 2000000;
+
+                    const tile = TILES_DATA[cur.pos];
+                    logs.push(`${cur.name} mendarat di ${tile.name}`);
+
+                    const { db, doc, updateDoc } = window.FB;
+                    await updateDoc(doc(db, "rooms", roomID), {
+                        dice: [d1, d2],
+                        players,
+                        logs,
+                        turn: (gameState.turn + 1) % players.length
+                    });
+                    setIsRolling(false);
+                }, 600);
+            };
+
+            const getCoord = (i) => {
+                const c = [[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[11,4],[11,3],[11,2],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[2,11],[3,11],[4,11],[5,11],[6,11],[7,11],[8,11],[9,11],[10,11]];
+                return { r: c[i][0], c: c[i][1] };
+            };
+
+            if (screen === 'landing') return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
+                    <div className="text-center">
+                        <h1 className="text-6xl font-black text-orange-500 italic">PAPUA</h1>
+                        <p className="tracking-[0.3em] text-zinc-500 text-[10px] mt-2 font-bold">MONOPOLY ONLINE</p>
+                    </div>
+                    <div className="w-full max-w-sm space-y-4">
+                        <input className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl text-white outline-none" placeholder="Nama Anda" value={playerName} onChange={e=>setPlayerName(e.target.value)} />
+                        <div className="flex justify-between bg-zinc-900 p-3 rounded-2xl border border-zinc-800">
+                            {TOKENS.map(t => <button key={t} onClick={()=>setSelectedToken(t)} className={`text-2xl p-2 rounded-xl ${selectedToken===t?'bg-orange-500':'opacity-30'}`}>{t}</button>)}
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={()=>joinRoom('host')} className="flex-1 bg-orange-600 py-4 rounded-2xl font-black shadow-lg">HOST</button>
+                            <button onClick={()=>setScreen('join-input')} className="flex-1 bg-zinc-800 py-4 rounded-2xl font-black">GABUNG</button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            if (screen === 'join-input') return (
+                <div className="min-h-screen flex items-center justify-center p-6">
+                    <div className="bg-zinc-900 p-8 rounded-3xl w-full max-w-sm space-y-4 text-center">
+                        <h2 className="font-bold">KODE ROOM</h2>
+                        <input className="w-full bg-zinc-800 p-4 rounded-xl text-center text-2xl font-black" placeholder="P-XXXX" value={roomID} onChange={e=>setRoomID(e.target.value.toUpperCase())} />
+                        <button onClick={()=>joinRoom('client')} className="w-full bg-orange-600 py-4 rounded-2xl font-bold">GABUNG SEKARANG</button>
+                        <button onClick={()=>setScreen('landing')} className="text-zinc-500 text-sm">Kembali</button>
+                    </div>
+                </div>
+            );
+
+            if (screen === 'lobby') return (
+                <div className="min-h-screen flex items-center justify-center p-6">
+                    <div className="bg-zinc-900 p-8 rounded-3xl w-full max-w-md space-y-6">
+                        <div className="text-center">
+                            <p className="text-xs text-zinc-500 mb-1">KODE ROOM</p>
+                            <p className="text-4xl font-black text-orange-500">{roomID}</p>
+                        </div>
+                        <div className="space-y-2">
+                            {gameState?.players.map(p => <div key={p.uid} className="bg-zinc-800 p-3 rounded-xl flex justify-between"><span>{p.token} {p.name}</span> {p.isHost && <span className="text-[10px] text-orange-500 font-bold">HOST</span>}</div>)}
+                        </div>
+                        {gameState?.players.find(p=>p.uid===user.uid)?.isHost && (
+                            <button onClick={()=>window.FB.updateDoc(window.FB.doc(window.FB.db, "rooms", roomID), { status: 'playing' })} className="w-full bg-orange-600 py-4 rounded-2xl font-black">START GAME</button>
+                        )}
+                    </div>
+                </div>
+            );
+
+            if (screen === 'game' && gameState) {
+                const myIdx = gameState.players.findIndex(p => p.uid === user.uid);
+                const isMyTurn = gameState.turn === myIdx;
+
+                return (
+                    <div className="min-h-screen flex flex-col xl:flex-row p-2 md:p-6 gap-6">
+                        <div className="flex-1 board-grid shadow-2xl">
+                            {TILES_DATA.map((t, i) => {
+                                const coord = getCoord(i);
+                                return (
+                                    <div key={i} className="tile" style={{ gridRow: coord.r, gridColumn: coord.c }}>
+                                        {t.color && <div className="h-[25%] w-full" style={{ background: t.color }} />}
+                                        <div className="flex-1 flex items-center justify-center p-0.5"><span className="leading-none">{t.name}</span></div>
+                                        <div className="absolute inset-0 flex items-center justify-center gap-0.5 pointer-events-none">
+                                            {gameState.players.filter(p=>p.pos===i).map(p => <div key={p.uid} className="w-5 h-5 rounded-full flex items-center justify-center border border-white shadow-lg" style={{ background: p.color }}>{p.token}</div>)}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="w-full xl:w-80 space-y-4">
+                            <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
+                                <h3 className="text-orange-500 font-black mb-4 italic">DASHBOARD</h3>
+                                {gameState.players.map((p, idx) => (
+                                    <div key={p.uid} className={`p-3 rounded-xl mb-2 flex justify-between ${gameState.turn===idx?'bg-zinc-800 border-l-4 border-orange-500':'opacity-40'}`}>
+                                        <span className="font-bold text-sm">{p.token} {p.name}</span>
+                                        <span className="font-black text-green-500 text-xs">Rp{p.money.toLocaleString()}</span>
+                                    </div>
+                                ))}
+                                <div className="mt-6 flex gap-3">
+                                    <div className="flex-1 bg-black p-3 rounded-xl flex gap-2 justify-center font-black text-xl">
+                                        <span>{gameState.dice[0]}</span><span>{gameState.dice[1]}</span>
+                                    </div>
+                                    <button disabled={!isMyTurn || isRolling} onClick={rollDice} className="bg-orange-600 px-6 rounded-xl font-bold disabled:opacity-20 uppercase text-xs">Kocok</button>
+                                </div>
+                            </div>
+                            <div className="bg-zinc-900 p-4 rounded-2xl h-40 overflow-hidden flex flex-col border border-zinc-800">
+                                <span className="text-[10px] text-zinc-500 font-bold mb-2">LOG</span>
+                                <div className="flex-1 overflow-y-auto space-y-1 custom-scroll text-[10px]">
+                                    {gameState.logs.slice().reverse().map((log, i) => <div key={i} className="border-l-2 border-zinc-700 pl-2">{log}</div>)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            return null;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
